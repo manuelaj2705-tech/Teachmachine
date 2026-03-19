@@ -44,3 +44,8 @@ if img_file_buffer is not None:
 image = Image.open('OIG5.jpg')
 st.image(image, width=350)
 
+
+# Muestra la versión de Python junto con detalles adicionales
+st.write("Versión de Python:", platform.python_version())
+
+

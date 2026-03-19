@@ -13,13 +13,13 @@ st.write("Versión de Python:", platform.python_version())
 model = load_model('keras_model.h5')
 data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 
-st.title("Reconocimiento de Imágenes")
+st.title("Estas o no estas en la camara")
 #st.write("Versión de Python:", platform.python_version())
 image = Image.open('OIG5.jpg')
 st.image(image, width=350)
 with st.sidebar:
     st.subheader("Usando un modelo entrenado en teachable Machine puedes Usarlo en esta app para identificar")
-img_file_buffer = st.camera_input("Toma una Foto")
+img_file_buffer = st.camera_input("*TOMA UNA FOTO AQUI*")
 
 if img_file_buffer is not None:
     # To read image file buffer with OpenCV:

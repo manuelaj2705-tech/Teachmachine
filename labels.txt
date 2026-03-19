@@ -1,3 +1,2 @@
-0 Izquierda
-1 Arriba
-2 Derecha
+0 Manu
+1 Sin manu

@@ -66,7 +66,30 @@ st.markdown("""
             border-radius: 12px;
             transition: width 0.3s ease;
         }
-        div[data-testid="stCameraInput"] label { color: #ccc !important; }
+
+        /* Label de la cámara: centrado, gris, con líneas decorativas a los lados */
+        div[data-testid="stCameraInput"] label {
+            display: block !important;
+            text-align: center !important;
+            color: #777 !important;
+            font-size: 0.85rem !important;
+            letter-spacing: 0.1em !important;
+            text-transform: uppercase !important;
+            padding: 0.5rem 0 0.8rem 0 !important;
+        }
+        div[data-testid="stCameraInput"] label::before,
+        div[data-testid="stCameraInput"] label::after {
+            content: "";
+            display: inline-block;
+            width: 55px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #444);
+            vertical-align: middle;
+            margin: 0 10px;
+        }
+        div[data-testid="stCameraInput"] label::after {
+            background: linear-gradient(90deg, #444, transparent);
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -87,8 +110,6 @@ def cargar_labels():
 model = cargar_modelo()
 class_names = cargar_labels()
 
-# Mapear índice → nombre legible
-# labels.txt: "0 Manu" / "1 Sin manu"
 def nombre_clase(raw: str) -> str:
     """Devuelve solo el nombre (sin el número) en minúsculas."""
     partes = raw.strip().split(" ", 1)
@@ -113,7 +134,7 @@ def predecir(pil_image: Image.Image):
 placeholder_resultado = st.empty()
 
 img_buffer = st.camera_input(
-    "Captura en vivo — La foto se analizará automáticamente",
+    "Activa la cámara para comenzar la detección",
     label_visibility="visible"
 )
 
@@ -138,10 +159,8 @@ if img_buffer is not None:
                 </div>
             """, unsafe_allow_html=True)
         else:
-            # Si la confianza es alta pero en "Sin manu", mostramos esa prob
-            # Si la confianza es baja en "Manu", mostramos la probabilidad de Sin manu
             if idx == 0:
-                prob_display = (1 - confianza) * 100   # prob de estar fuera
+                prob_display = (1 - confianza) * 100
                 label_display = nombre_clase(class_names[1])
             else:
                 prob_display = porcentaje
@@ -156,8 +175,8 @@ if img_buffer is not None:
                     </div>
                 </div>
             """, unsafe_allow_html=True)
-            
- # Modo continuo: fuerza re-run automático cada 1.5 s
+
+    # Modo continuo: fuerza re-run automático cada 1.5 s
     if modo_continuo:
         time.sleep(1.5)
         st.rerun()

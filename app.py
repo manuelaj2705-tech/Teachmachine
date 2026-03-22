@@ -6,7 +6,7 @@ import time
 
 # ─── Configuración de página ───────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Detector de Persona",
+    page_title="DETECTOR DE PERSONA EN CAMARA ",
     page_icon="📷",
     layout="centered"
 )
@@ -15,7 +15,7 @@ st.markdown("""
     <style>
         .main { background-color: #0e0e0e; }
         .stApp { background-color: #0e0e0e; color: white; }
-        .title { text-align: center; font-size: 2rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; }
+        .title { text-align: center; font-size: 10rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; }
         .subtitle { text-align: center; font-size: 0.95rem; color: #888; margin-bottom: 1.5rem; }
 
         .card-verde {

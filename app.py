@@ -13,7 +13,7 @@ data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 st.title("Estas o no estas en la camara")
 #st.write("Versión de Python:", platform.python_version())
 with st.sidebar:
-    st.subheader("Usando un modelo entrenado en teachable Machine puedes Usarlo en esta app para identificar")
+    st.subheader("Usando un modelo entrenado en Teachable Machine, esta aplicación identifica si una persona está presente frente a la cámara y muestra la probabilidad de detección en tiempo real.")
 img_file_buffer = st.camera_input("*TOMA UNA FOTO AQUI* : Descubriras si te reconoce o no la camara")
 
 if img_file_buffer is not None:

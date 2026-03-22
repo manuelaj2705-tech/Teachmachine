@@ -1,189 +1,89 @@
+from PIL import Image
+import io
 import streamlit as st
-from keras.models import load_model
 import numpy as np
-from PIL import Image, ImageOps
-import time
-
-# ─── Configuración de página ───────────────────────────────────────────────────
+import pandas as pd
+import torch
 st.set_page_config(
-    page_title="Detector de Persona",
+    page_title="Detección de Objetos en Tiempo Real",
     page_icon="📷",
-    layout="centered"
+    layout="wide"
 )
-
-st.markdown("""
-    <style>
-        .main { background-color: #0e0e0e; }
-        .stApp { background-color: #0e0e0e; color: white; }
-        .title { text-align: center; font-size: 3.5rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; }
-        .subtitle { text-align: center; font-size: 0.95rem; color: #888; margin-bottom: 1.5rem; }
-
-        .card-verde {
-            background: linear-gradient(135deg, #0f3d1f, #1a6b35);
-            border: 2px solid #2ecc71;
-            border-radius: 16px;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            margin-top: 1rem;
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);
-        }
-        .card-rojo {
-            background: linear-gradient(135deg, #3d0f0f, #6b1a1a);
-            border: 2px solid #e74c3c;
-            border-radius: 16px;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            margin-top: 1rem;
-            box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
-        }
-        .estado-texto {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin: 0;
-        }
-        .prob-texto {
-            font-size: 1.1rem;
-            color: #ddd;
-            margin-top: 0.4rem;
-        }
-        .barra-contenedor {
-            background: #222;
-            border-radius: 12px;
-            height: 22px;
-            width: 100%;
-            margin-top: 1rem;
-            overflow: hidden;
-        }
-        .barra-verde {
-            background: linear-gradient(90deg, #27ae60, #2ecc71);
-            height: 100%;
-            border-radius: 12px;
-            transition: width 0.3s ease;
-        }
-        .barra-roja {
-            background: linear-gradient(90deg, #c0392b, #e74c3c);
-            height: 100%;
-            border-radius: 12px;
-            transition: width 0.3s ease;
-        }
-
-        /* Label de la cámara: centrado, gris, con líneas decorativas a los lados */
-        div[data-testid="stCameraInput"] label {
-            display: block !important;
-            text-align: center !important;
-            color: #777 !important;
-            font-size: 0.85rem !important;
-            letter-spacing: 0.1em !important;
-            text-transform: uppercase !important;
-            padding: 0.5rem 0 0.8rem 0 !important;
-        }
-        div[data-testid="stCameraInput"] label::before,
-        div[data-testid="stCameraInput"] label::after {
-            content: "";
-            display: inline-block;
-            width: 55px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #444);
-            vertical-align: middle;
-            margin: 0 10px;
-        }
-        div[data-testid="stCameraInput"] label::after {
-            background: linear-gradient(90deg, #444, transparent);
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-st.markdown('<p class="title">Detector de Persona en Cámara 📷</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Usando un modelo entrenado en Teachable Machine, esta aplicación identifica si una persona está presente frente a la cámara y muestra la probabilidad de detección en tiempo real.</p>', unsafe_allow_html=True)
-
-
-# ─── Cargar modelo y etiquetas ─────────────────────────────────────────────────
 @st.cache_resource
-def cargar_modelo():
-    return load_model("keras_model.h5", compile=False)
+def load_model():
+    try:
+        from ultralytics import YOLO
+        model = YOLO("yolov5su.pt")
+        return model
+    except Exception as e:
+        st.error(f"❌ Error al cargar el modelo: {str(e)}")
+        return None
+st.title(" 📸 Detección de Objetos en Imágenes 📸")
+st.markdown("Esta aplicación utiliza un modelo entrenado en Teachable Machine para detectar personas y objetos en imágenes capturadas con tu cámara, mostrando en tiempo real la probabilidad de cada detección.")
+with st.spinner("Cargando modelo YOLOv5..."):
+    model = load_model()
+if model:
+    with st.sidebar:
+        st.title("Parámetros")
+        st.subheader("Configuración de detección")
+        conf_threshold = st.slider("Confianza mínima", 0.0, 1.0, 0.25, 0.01)
+        iou_threshold  = st.slider("Umbral IoU", 0.0, 1.0, 0.45, 0.01)
+        max_det        = st.number_input("Detecciones máximas", 10, 2000, 1000, 10)
+    picture = st.camera_input("Captura una imagen y descubre los objetos que podemos capturar", key="camera")
+    if picture:
+        bytes_data = picture.getvalue()
+        # Decodificar con Pillow en lugar de cv2 (evita dependencia libGL)
+        #pil_img  = Image.open(io.BytesIO(bytes_data)).convert("RGB")
+        #np_img   = np.array(pil_img)   # array RGB
+        pil_img = Image.open(io.BytesIO(bytes_data)).convert("RGB")
+        np_img  = np.array(pil_img)[..., ::-1]  # RGB → BGR para que YOLO procese bien
 
-@st.cache_data
-def cargar_labels():
-    with open("labels.txt", "r") as f:
-        return f.readlines()
-
-model = cargar_modelo()
-class_names = cargar_labels()
-
-def nombre_clase(raw: str) -> str:
-    """Devuelve solo el nombre (sin el número) en minúsculas."""
-    partes = raw.strip().split(" ", 1)
-    return partes[1] if len(partes) > 1 else partes[0]
-
-THRESHOLD = 0.99  # Umbral de confianza
-
-# ─── Predicción ────────────────────────────────────────────────────────────────
-def predecir(pil_image: Image.Image):
-    size = (224, 224)
-    img = ImageOps.fit(pil_image.convert("RGB"), size, Image.Resampling.LANCZOS)
-    arr = (np.asarray(img).astype(np.float32) / 127.5) - 1
-    data = arr[np.newaxis, ...]          # shape (1,224,224,3)
-    pred = model.predict(data, verbose=0)
-    idx = int(np.argmax(pred))
-    confianza = float(pred[0][idx])
-    nombre = nombre_clase(class_names[idx])
-    return nombre, confianza, idx
-
-
-# ─── Cámara ────────────────────────────────────────────────────────────────────
-placeholder_resultado = st.empty()
-
-img_buffer = st.camera_input(
-    "Activa la cámara para comenzar la detección",
-    label_visibility="visible"
-)
-
-if img_buffer is not None:
-    image = Image.open(img_buffer)
-
-    nombre, confianza, idx = predecir(image)
-    porcentaje = confianza * 100
-
-    # Clase 0 → persona presente  |  Clase 1 → sin persona
-    esta_presente = (idx == 0 and confianza >= THRESHOLD)
-
-    with placeholder_resultado.container():
-        if esta_presente:
-            st.markdown(f"""
-                <div class="card-verde">
-                    <p class="estado-texto">🟢 ¡Estás en cámara!</p>
-                    <p class="prob-texto">Probabilidad: <strong>{porcentaje:.2f}%</strong></p>
-                    <div class="barra-contenedor">
-                        <div class="barra-verde" style="width:{porcentaje:.1f}%"></div>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            if idx == 0:
-                prob_display = (1 - confianza) * 100
-                label_display = nombre_clase(class_names[1])
+        with st.spinner("Detectando objetos..."):
+            try:
+                results = model(
+                    np_img,
+                    conf=conf_threshold,
+                    iou=iou_threshold,
+                    max_det=int(max_det)
+                )
+            except Exception as e:
+                st.error(f"Error durante la detección: {str(e)}")
+                st.stop()
+        result    = results[0]
+        boxes     = result.boxes
+        annotated = result.plot()              # devuelve BGR numpy array
+        annotated_rgb = annotated[:, :, ::-1]  # BGR → RGB sin cv2
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Imagen con detecciones")
+            st.image(annotated_rgb, use_container_width=True)
+        with col2:
+            st.subheader("Objetos detectados")
+            if boxes is not None and len(boxes) > 0:
+                label_names    = model.names
+                category_count = {}
+                category_conf  = {}
+                for box in boxes:
+                    cat  = int(box.cls.item())
+                    conf = float(box.conf.item())
+                    category_count[cat] = category_count.get(cat, 0) + 1
+                    category_conf.setdefault(cat, []).append(conf)
+                data = [
+                    {
+                        "Categoría":          label_names[cat],
+                        "Cantidad":           count,
+                        "Confianza promedio": f"{np.mean(category_conf[cat]):.2f}"
+                    }
+                    for cat, count in category_count.items()
+                ]
+                df = pd.DataFrame(data)
+                st.dataframe(df, use_container_width=True)
+                st.bar_chart(df.set_index("Categoría")["Cantidad"])
             else:
-                prob_display = porcentaje
-                label_display = nombre_clase(class_names[1])
-
-            st.markdown(f"""
-                <div class="card-rojo">
-                    <p class="estado-texto">🔴 No estás en cámara</p>
-                    <p class="prob-texto">Probabilidad de ausencia: <strong>{prob_display:.2f}%</strong></p>
-                    <div class="barra-contenedor">
-                        <div class="barra-roja" style="width:{prob_display:.1f}%"></div>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-
-    # Modo continuo: fuerza re-run automático cada 1.5 s
-    if modo_continuo:
-        time.sleep(1.5)
-        st.rerun()
-
+                st.info("No se detectaron objetos con los parámetros actuales.")
+                st.caption("Prueba a reducir el umbral de confianza en la barra lateral.")
 else:
-    placeholder_resultado.markdown("""
-        <div style="text-align:center; color:#555; margin-top:2rem; font-size:1rem;">
-            👆 Activa la cámara para comenzar la detección
-        </div>
-    """, unsafe_allow_html=True)
+    st.error("No se pudo cargar el modelo. Verifica las dependencias e inténtalo nuevamente.")
+    st.stop()
+st.markdown("---")
+st.caption("**Acerca de la aplicación**: Detección de objetos con YOLOv5 + Streamlit + PyTorch.")

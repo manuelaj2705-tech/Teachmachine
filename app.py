@@ -73,7 +73,7 @@ st.markdown("""
 st.markdown('<p class="title">Detector de Persona en Cámara 📷</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Usando un modelo entrenado en Teachable Machine, esta aplicación identifica si una persona está presente frente a la cámara y muestra la probabilidad de detección en tiempo real.</p>', unsafe_allow_html=True)
 
-──────────────────────────────────────────────────────────────────────────────────────────────────
+
 # ─── Cargar modelo y etiquetas ─────────────────────────────────────────────────
 @st.cache_resource
 def cargar_modelo():

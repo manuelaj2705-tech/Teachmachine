@@ -157,7 +157,6 @@ if img_buffer is not None:
                 </div>
             """, unsafe_allow_html=True)
             
-            esta_presente = (idx == 0 and confianza >= 0.75)
  # Modo continuo: fuerza re-run automático cada 1.5 s
     if modo_continuo:
         time.sleep(1.5)

@@ -1,51 +1,68 @@
-import streamlit as st
-import cv2
-import numpy as np
-#from PIL import Image
-from PIL import Image as Image, ImageOps as ImagOps
-from keras.models import load_model
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Detector de Presencia</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+</head>
+<body>
 
-import platform
+  <h1>Detector de Persona en Cámara</h1>
+  <button onclick="init()">Iniciar Cámara</button>
+  
+  <div id="webcam-container"></div>
+  <div id="label-container"></div>
 
-model = load_model('keras_model.h5')
-data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
+  <script>
+    const URL = "TU_MODELO_URL"; // ← pega aquí tu link
 
-st.title("Estas o no estas en la camara")
-#st.write("Versión de Python:", platform.python_version())
-with st.sidebar:
-    st.subheader("Usando un modelo entrenado en Teachable Machine, esta aplicación identifica si una persona está presente frente a la cámara y muestra la probabilidad de detección en tiempo real.")
-img_file_buffer = st.camera_input("*TOMA UNA FOTO AQUI* : Descubriras si te reconoce o no la camara")
+    let model, webcam, labelContainer, maxPredictions;
 
-if img_file_buffer is not None:
-    # To read image file buffer with OpenCV:
-    data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
-   #To read image file buffer as a PIL Image:
-    img = Image.open(img_file_buffer)
+    async function init() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
 
-    newsize = (224, 224)
-    img = img.resize(newsize)
-    # To convert PIL Image to numpy array:
-    img_array = np.array(img)
+      model = await tmImage.load(modelURL, metadataURL);
+      maxPredictions = model.getTotalClasses();
 
-    # Normalize the image
-    normalized_image_array = (img_array.astype(np.float32) / 127.0) - 1
-    # Load the image into the array
-    data[0] = normalized_image_array
+      webcam = new tmImage.Webcam(300, 300, true);
+      await webcam.setup();
+      await webcam.play();
+      window.requestAnimationFrame(loop);
 
-    # run the inference
-    prediction = model.predict(data)
-    print(prediction)
-    if prediction[0][0]>0.5:
-      st.header('Esta manuela, con Probabilidad: '+str( prediction[0][0]) )
-    if prediction[0][1]>0.5:
-      st.header('No esta manuela, con Probabilidad: '+str( prediction[0][1]))
-    #if prediction[0][2]>0.5:
-    # st.header('Derecha, con Probabilidad: '+str( prediction[0][2]))
-image = Image.open('OIG5.jpg')
-st.image(image, width=350)
+      document.getElementById("webcam-container").appendChild(webcam.canvas);
+      labelContainer = document.getElementById("label-container");
+    }
 
+    async function loop() {
+      webcam.update();
+      await predict();
+      window.requestAnimationFrame(loop);
+    }
 
-# Muestra la versión de Python junto con detalles adicionales
-st.write("Versión de Python:", platform.python_version())
+    async function predict() {
+      const prediction = await model.predict(webcam.canvas);
 
+      let probPersona = 0;
 
+      for (let i = 0; i < prediction.length; i++) {
+        if (prediction[i].className === "Persona") {
+          probPersona = prediction[i].probability;
+        }
+      }
+
+      let resultado = "";
+
+      // 🔥 Aquí está la solución (umbral)
+      if (probPersona > 0.90) {
+        resultado = "🟢 Estás en cámara (" + (probPersona * 100).toFixed(2) + "%)";
+      } else {
+        resultado = "🔴 No estás en cámara";
+      }
+
+      labelContainer.innerHTML = resultado;
+    }
+  </script>
+
+</body>
+</html>

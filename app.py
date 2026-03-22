@@ -13,8 +13,8 @@ class_names = open("labels.txt", "r").readlines()
 # Crear array de entrada
 data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 
-# Cargar imagen (cambia esto)
-image = Image.open("reconocer.jpg").
+# ✅ Cargar imagen (CORREGIDO)
+image = Image.open("reconocer.jpg").convert("RGB")
 
 # Ajustar tamaño
 size = (224, 224)
@@ -35,10 +35,10 @@ index = np.argmax(prediction)
 class_name = class_names[index].strip()
 confidence_score = prediction[0][index]
 
-# 🔥 UMBRAL (ajústalo si quieres)
+# 🔥 UMBRAL
 THRESHOLD = 0.90
 
-# 🔥 LÓGICA CORREGIDA
+# 🔥 LÓGICA
 if class_name == "Persona" and confidence_score > THRESHOLD:
     print(f"🟢 Estás en cámara ({confidence_score * 100:.2f}%)")
 else:

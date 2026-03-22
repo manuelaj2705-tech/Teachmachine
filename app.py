@@ -5,7 +5,6 @@ from PIL import Image, ImageOps
 
 st.title("Detector de Persona en Cámara")
 
-# Cargar modelo
 @st.cache_resource
 def cargar_modelo():
     return load_model("keras_model.h5", compile=False)
@@ -13,15 +12,12 @@ def cargar_modelo():
 model = cargar_modelo()
 class_names = open("labels.txt", "r").readlines()
 
-# Cámara en vivo
 img_file_buffer = st.camera_input("Toma una foto")
 
 if img_file_buffer is not None:
     image = Image.open(img_file_buffer).convert("RGB")
-
     st.image(image, caption="Captura", use_column_width=True)
 
-    # Preprocesamiento
     size = (224, 224)
     image = ImageOps.fit(image, size, Image.Resampling.LANCZOS)
 
@@ -31,17 +27,18 @@ if img_file_buffer is not None:
     data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
     data[0] = normalized_image_array
 
-    # Predicción
-    prediction = model.predict(data)
-    index = np.argmax(prediction)
+    prediction = model.predict(data)[0]
 
-    class_name = class_names[index].strip()
-    confidence_score = prediction[0][index]
+    prob_persona = 0
+    prob_no = 0
 
-    # UMBRAL
-    THRESHOLD = 0.90
+    for i, name in enumerate(class_names):
+        if "Persona" in name:
+            prob_persona = prediction[i]
+        else:
+            prob_no = prediction[i]
 
-    if class_name == "Persona" and confidence_score > THRESHOLD:
-        st.success(f"🟢 Estás en cámara ({confidence_score * 100:.2f}%)")
+    if prob_persona > prob_no and prob_persona > 0.75:
+        st.success(f"🟢 Estás en cámara ({prob_persona * 100:.2f}%)")
     else:
-        st.error(f"🔴 No estás en cámara ({confidence_score * 100:.2f}%)")
+        st.error(f"🔴 No estás en cámara ({prob_no * 100:.2f}%)")

@@ -1,68 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Detector de Presencia</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
-</head>
-<body>
+from keras.models import load_model
+from PIL import Image, ImageOps
+import numpy as np
 
-  <h1>Detector de Persona en Cámara</h1>
-  <button onclick="init()">Iniciar Cámara</button>
-  
-  <div id="webcam-container"></div>
-  <div id="label-container"></div>
+np.set_printoptions(suppress=True)
 
-  <script>
-    const URL = "TU_MODELO_URL"; // ← pega aquí tu link
+# Cargar modelo
+model = load_model("keras_Model.h5", compile=False)
 
-    let model, webcam, labelContainer, maxPredictions;
+# Cargar etiquetas
+class_names = open("labels.txt", "r").readlines()
 
-    async function init() {
-      const modelURL = URL + "model.json";
-      const metadataURL = URL + "metadata.json";
+# Crear array de entrada
+data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 
-      model = await tmImage.load(modelURL, metadataURL);
-      maxPredictions = model.getTotalClasses();
+# Cargar imagen (cambia esto)
+image = Image.open("<IMAGE_PATH>").convert("RGB")
 
-      webcam = new tmImage.Webcam(300, 300, true);
-      await webcam.setup();
-      await webcam.play();
-      window.requestAnimationFrame(loop);
+# Ajustar tamaño
+size = (224, 224)
+image = ImageOps.fit(image, size, Image.Resampling.LANCZOS)
 
-      document.getElementById("webcam-container").appendChild(webcam.canvas);
-      labelContainer = document.getElementById("label-container");
-    }
+# Convertir a array
+image_array = np.asarray(image)
 
-    async function loop() {
-      webcam.update();
-      await predict();
-      window.requestAnimationFrame(loop);
-    }
+# Normalizar
+normalized_image_array = (image_array.astype(np.float32) / 127.5) - 1
 
-    async function predict() {
-      const prediction = await model.predict(webcam.canvas);
+data[0] = normalized_image_array
 
-      let probPersona = 0;
+# Predicción
+prediction = model.predict(data)
+index = np.argmax(prediction)
 
-      for (let i = 0; i < prediction.length; i++) {
-        if (prediction[i].className === "Persona") {
-          probPersona = prediction[i].probability;
-        }
-      }
+class_name = class_names[index].strip()
+confidence_score = prediction[0][index]
 
-      let resultado = "";
+# 🔥 UMBRAL (ajústalo si quieres)
+THRESHOLD = 0.90
 
-      // 🔥 Aquí está la solución (umbral)
-      if (probPersona > 0.90) {
-        resultado = "🟢 Estás en cámara (" + (probPersona * 100).toFixed(2) + "%)";
-      } else {
-        resultado = "🔴 No estás en cámara";
-      }
-
-      labelContainer.innerHTML = resultado;
-    }
-  </script>
-
-</body>
-</html>
+# 🔥 LÓGICA CORREGIDA
+if class_name == "Persona" and confidence_score > THRESHOLD:
+    print(f"🟢 Estás en cámara ({confidence_score * 100:.2f}%)")
+else:
+    print(f"🔴 No estás en cámara ({confidence_score * 100:.2f}%)")

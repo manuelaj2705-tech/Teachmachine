@@ -16,7 +16,7 @@ st.markdown("""
         .main { background-color: #0e0e0e; }
         .stApp { background-color: #0e0e0e; color: white; }
         .title { text-align: center; font-size: 10rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; }
-        .subtitle { text-align: center; font-size: 0.95rem; color: #888; margin-bottom: 1.5rem; }
+        .subtitle { text-align: center; font-size: 5 rem; color: #888; margin-bottom: 1.5rem; }
 
         .card-verde {
             background: linear-gradient(135deg, #0f3d1f, #1a6b35);
@@ -71,7 +71,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<p class="title">📷 Detector de Persona en Cámara</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Activa la cámara y el modelo detectará si estás presente</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Usando un modelo entrenado en Teachable Machine, esta aplicación identifica si una persona está presente frente a la cámara y muestra la probabilidad de detección en tiempo real.</p>', unsafe_allow_html=True)
 
 # ─── Cargar modelo y etiquetas ─────────────────────────────────────────────────
 @st.cache_resource

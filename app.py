@@ -107,11 +107,6 @@ def predecir(pil_image: Image.Image):
     nombre = nombre_clase(class_names[idx])
     return nombre, confianza, idx
 
-# ─── Opciones ──────────────────────────────────────────────────────────────────
-modo_continuo = st.toggle("🔄 Detección continua", value=True)
-THRESHOLD = 0.99
-
-st.markdown("---")
 
 # ─── Cámara ────────────────────────────────────────────────────────────────────
 placeholder_resultado = st.empty()

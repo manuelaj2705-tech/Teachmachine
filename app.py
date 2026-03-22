@@ -14,7 +14,7 @@ class_names = open("labels.txt", "r").readlines()
 data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 
 # Cargar imagen (cambia esto)
-image = Image.open("<IMAGE_PATH>").convert("RGB")
+image = Image.open("reconocer.jpg").
 
 # Ajustar tamaño
 size = (224, 224)

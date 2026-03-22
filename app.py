@@ -1,28 +1,27 @@
 import streamlit as st
 from keras.models import load_model
-from PIL import Image, ImageOps
 import numpy as np
+from PIL import Image, ImageOps
 
 st.title("Detector de Persona en Cámara")
 
-# Cargar modelo UNA sola vez
+# Cargar modelo
 @st.cache_resource
 def cargar_modelo():
     return load_model("keras_model.h5", compile=False)
 
 model = cargar_modelo()
-
-# Cargar etiquetas
 class_names = open("labels.txt", "r").readlines()
 
-# Subir imagen
-uploaded_file = st.file_uploader("Sube una imagen", type=["jpg", "png", "jpeg"])
+# Cámara en vivo
+img_file_buffer = st.camera_input("Toma una foto")
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Imagen subida", use_column_width=True)
+if img_file_buffer is not None:
+    image = Image.open(img_file_buffer).convert("RGB")
 
-    # Preparar imagen
+    st.image(image, caption="Captura", use_column_width=True)
+
+    # Preprocesamiento
     size = (224, 224)
     image = ImageOps.fit(image, size, Image.Resampling.LANCZOS)
 
@@ -39,10 +38,9 @@ if uploaded_file is not None:
     class_name = class_names[index].strip()
     confidence_score = prediction[0][index]
 
-    # 🔥 UMBRAL
+    # UMBRAL
     THRESHOLD = 0.90
 
-    # 🔥 RESULTADO
     if class_name == "Persona" and confidence_score > THRESHOLD:
         st.success(f"🟢 Estás en cámara ({confidence_score * 100:.2f}%)")
     else:

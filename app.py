@@ -32,18 +32,16 @@ if img_file_buffer is not None:
     data[0] = normalized_image_array
 
     # Predicción
-    prediction = model.predict(data)[0]
+    prediction = model.predict(data)
+    index = np.argmax(prediction)
 
-    prob_persona = 0
+    class_name = class_names[index].strip()
+    confidence_score = prediction[0][index]
 
-    for i, name in enumerate(class_names):
-        if "Persona" in name:
-            prob_persona = prediction[i]
-
-    # UMBRAL (más flexible para no fallar cuando sí estás)
+    # UMBRAL (un poco más bajo para no fallar cuando sí estás)
     THRESHOLD = 0.75
 
-    if prob_persona > THRESHOLD:
-        st.success(f"🟢 Estás en cámara ({prob_persona * 100:.2f}%)")
+    if class_name == "Persona" and confidence_score > THRESHOLD:
+        st.success(f"🟢 Estás en cámara ({confidence_score * 100:.2f}%)")
     else:
-        st.error(f"🔴 No estás en cámara ({prob_persona * 100:.2f}%)")
+        st.error(f"🔴 No estás en cámara ({confidence_score * 100:.2f}%)")

@@ -5,7 +5,7 @@ import numpy as np
 np.set_printoptions(suppress=True)
 
 # Cargar modelo
-model = load_model("keras_Model.h5", compile=False)
+model = load_model("keras_model.h5", compile=False)
 
 # Cargar etiquetas
 class_names = open("labels.txt", "r").readlines()

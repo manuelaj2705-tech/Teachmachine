@@ -79,7 +79,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<p class="title">Detector de Persona en Cámara 📷</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Activa la cámara y el modelo detectará si estás presente</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Usando un modelo entrenado en Teachable Machine, esta aplicación es capaz de identificar y clasificar diferentes elementos en tiempo real, permitiendo reconocer patrones a partir de datos previamente entrenados.</p>', unsafe_allow_html=True)
 
 # ─── Cargar modelo y etiquetas ─────────────────────────────────────────────────
 @st.cache_resource
@@ -114,15 +114,12 @@ def predecir(pil_image: Image.Image):
     return nombre, confianza, idx
 
 # ─── Toggle detección continua ─────────────────────────────────────────────────
-modo_continuo = st.toggle("🔄 Detección continua", value=True)
-
-st.markdown("---")
 
 # ─── Cámara ────────────────────────────────────────────────────────────────────
 placeholder_resultado = st.empty()
 
 img_buffer = st.camera_input(
-    "Captura en vivo — cada foto se analiza automáticamente",
+    "Captura en vivo — La foto se analizará automáticamente",
     label_visibility="visible"
 )
 

@@ -42,6 +42,6 @@ if img_file_buffer is not None:
     THRESHOLD = 0.90
 
     if class_name == "Persona" and confidence_score > THRESHOLD:
-        st.success(f"🔴 No estás en cámara ({confidence_score * 100:.2f}%)")
+        st.success(f"🟢 Estás en cámara ({confidence_score * 100:.2f}%)")
     else:
-        st.error(f" 🟢 Estás en cámara ({confidence_score * 100:.2f}%)")
+        st.error(f"🔴 No estás en cámara ({confidence_score * 100:.2f}%)")

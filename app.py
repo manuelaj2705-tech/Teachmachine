@@ -93,7 +93,7 @@ def nombre_clase(raw: str) -> str:
     partes = raw.strip().split(" ", 1)
     return partes[1] if len(partes) > 1 else partes[0]
 
-THRESHOLD = 0.70  # Umbral de confianza
+THRESHOLD = 0.99  # Umbral de confianza
 
 # ─── Predicción ────────────────────────────────────────────────────────────────
 def predecir(pil_image: Image.Image):
@@ -108,11 +108,8 @@ def predecir(pil_image: Image.Image):
     return nombre, confianza, idx
 
 # ─── Opciones ──────────────────────────────────────────────────────────────────
-col_a, col_b = st.columns(2)
-with col_a:
-    modo_continuo = st.toggle("🔄 Detección continua", value=True)
-with col_b:
-    THRESHOLD = st.slider("Umbral de confianza", 0.50, 0.99, 0.70, 0.01)
+modo_continuo = st.toggle("🔄 Detección continua", value=True)
+THRESHOLD = 0.99
 
 st.markdown("---")
 

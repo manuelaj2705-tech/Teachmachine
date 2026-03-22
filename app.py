@@ -6,7 +6,7 @@ import time
 
 # ─── Configuración de página ───────────────────────────────────────────────────
 st.set_page_config(
-    page_title="DETECTOR DE PERSONA EN CAMARA ",
+    page_title="Detector de Persona",
     page_icon="📷",
     layout="centered"
 )
@@ -15,8 +15,8 @@ st.markdown("""
     <style>
         .main { background-color: #0e0e0e; }
         .stApp { background-color: #0e0e0e; color: white; }
-        .title { text-align: center; font-size: 10rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; }
-        .subtitle { text-align: center; font-size: 5 rem; color: #888; margin-bottom: 1.5rem; }
+        .title { text-align: center; font-size: 3.5rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; }
+        .subtitle { text-align: center; font-size: 0.95rem; color: #888; margin-bottom: 1.5rem; }
 
         .card-verde {
             background: linear-gradient(135deg, #0f3d1f, #1a6b35);
@@ -70,8 +70,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="title">📷 Detector de Persona en Cámara</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Usando un modelo entrenado en Teachable Machine, esta aplicación identifica si una persona está presente frente a la cámara y muestra la probabilidad de detección en tiempo real.</p>', unsafe_allow_html=True)
+st.markdown('<p class="title">Detector de Persona en Cámara 📷</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Activa la cámara y el modelo detectará si estás presente</p>', unsafe_allow_html=True)
 
 # ─── Cargar modelo y etiquetas ─────────────────────────────────────────────────
 @st.cache_resource
@@ -107,6 +107,11 @@ def predecir(pil_image: Image.Image):
     nombre = nombre_clase(class_names[idx])
     return nombre, confianza, idx
 
+# ─── Opciones ──────────────────────────────────────────────────────────────────
+modo_continuo = st.toggle("🔄 Detección continua", value=True)
+THRESHOLD = 0.99
+
+st.markdown("---")
 
 # ─── Cámara ────────────────────────────────────────────────────────────────────
 placeholder_resultado = st.empty()

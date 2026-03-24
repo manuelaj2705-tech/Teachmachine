@@ -157,9 +157,7 @@ if img_buffer is not None:
                 </div>
             """, unsafe_allow_html=True)
 
-    # Detección continua: re-run automático cada 1.5s
-    if modo_continuo:
-       modo_continuo = st.toggle("🔄 Detección continua", value=False)
+
 
 else:
     placeholder_resultado.markdown("""

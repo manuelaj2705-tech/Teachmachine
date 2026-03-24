@@ -159,8 +159,7 @@ if img_buffer is not None:
 
     # Detección continua: re-run automático cada 1.5s
     if modo_continuo:
-        time.sleep(1.5)
-        st.rerun()
+       modo_continuo = st.toggle("🔄 Detección continua", value=False)
 
 else:
     placeholder_resultado.markdown("""

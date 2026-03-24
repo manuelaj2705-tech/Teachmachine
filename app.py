@@ -17,7 +17,7 @@ st.markdown("""
         .stApp { background-color: #0e0e0e; color: white; }
         .title {
             text-align: center;
-            font-size: 4rem !important;
+            font-size: 3.5rem !important;
             font-weight: 800;
             color: #ffffff;
             margin-bottom: 0.5rem;
